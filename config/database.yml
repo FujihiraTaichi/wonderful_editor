@@ -1,0 +1,20 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: root
+  password: root
+  host: 127.0.0.1
+
+development:
+  <<: *default
+  database: wonderful_editor_development
+
+test:
+  <<: *default
+  database: wonderful_editor_test
+
+production:
+  <<: *default
+  database: wonderful_editor_production
+  password: <%= ENV['WONDERFUL-EDITOR_DATABASE_PASSWORD'] %>
