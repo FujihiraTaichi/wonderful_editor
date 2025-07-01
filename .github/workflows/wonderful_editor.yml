@@ -29,7 +29,11 @@ jobs:
             ${{ runner.os }}-gem-
       - name: Install gems
         run:
-          bundle install --path vendor/bundle --jobs 4
+          bundle config set path 'vendor/bundle'
+          bundle install --jobs 4
+      - name: Confirm Rails application class
+        run: |
+          bundle exec rails runner "puts Rails.application.class.name"
       - name: Verify Rails is available
         run: bundle exec rails -v
       - name: Setup Database
