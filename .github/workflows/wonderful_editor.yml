@@ -29,9 +29,7 @@ jobs:
       #       ${{ runner.os }}-gem-
       - name: Install gems
         run:
-          bundle config set path 'vendor/bundle'
-          bundle config set bin 'bin'
-          bundle install --jobs 4 --retry 3 --binstubs=bin
+          bundle install --path vendor/bundle --jobs 4
       - name: Confirm Rails application class
         run: |
           bundle exec bin/rails runner "puts Rails.application.class.name"
