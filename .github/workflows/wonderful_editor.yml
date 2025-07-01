@@ -30,10 +30,10 @@ jobs:
       - name: Install gems
         run:
           bundle config set path 'vendor/bundle'
-          bundle install --jobs 4
+          bundle install --jobs 4 --binstubs
       - name: Confirm Rails application class
         run: |
-          bundle exec rails runner "puts Rails.application.class.name"
+          bundle exec bin/rails runner "puts Rails.application.class.name"
       - name: Verify Rails is available
         run: bundle exec rails -v
       - name: Setup Database
