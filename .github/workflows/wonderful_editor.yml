@@ -20,17 +20,18 @@ jobs:
           ruby-version: 3.1.3
       - name: Setup bundler
         run: gem install bundler
-      - name: Cache gems
-        uses: actions/cache@v4
-        with:
-          path: vendor/bundle
-          key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-gem-
+      # - name: Cache gems
+      #   uses: actions/cache@v4
+      #   with:
+      #     path: vendor/bundle
+      #     key: ${{ runner.os }}-gem-${{ hashFiles('**/Gemfile.lock') }}
+      #     restore-keys: |
+      #       ${{ runner.os }}-gem-
       - name: Install gems
         run:
           bundle config set path 'vendor/bundle'
-          bundle install --jobs 4 --binstubs
+          bundle config set bin 'bin'
+          bundle install --jobs 4 --retry 3 --binstubs=bin
       - name: Confirm Rails application class
         run: |
           bundle exec bin/rails runner "puts Rails.application.class.name"
