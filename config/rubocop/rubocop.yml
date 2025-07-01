@@ -1,5 +1,6 @@
 # Copy from https://github.com/onk/onkcop/blob/master/config/rubocop.yml
 
+# 最新 RuboCop 対応（2025年以降のバージョン）
 plugins:
   - rubocop-rails
 # 自動生成されるものはチェック対象から除外する
