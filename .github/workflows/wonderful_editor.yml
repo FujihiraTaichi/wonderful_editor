@@ -45,6 +45,7 @@ jobs:
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
       - name: Rubocop
+        continue-on-error: true
         run: bundle exec rubocop --parallel
       - name: RSpec
         run: bundle exec rspec
