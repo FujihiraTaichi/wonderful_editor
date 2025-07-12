@@ -19,8 +19,8 @@
 #
 FactoryBot.define do
   factory :article do
-    title { "MyString" }
-    body { "MyText" }
-    user { nil }
+    title { "サンプル記事" }
+    body { "本文の内容" }
+    association :user
   end
 end

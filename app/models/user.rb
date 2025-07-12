@@ -38,6 +38,9 @@ class User < ActiveRecord::Base
          :recoverable, :rememberable, :validatable
   include DeviseTokenAuth::Concerns::User
 
+  # name が空でないことを検証する
+  validates :name, presence: true
+
   # リレーション（アソシエーション）
   has_many :articles
   has_many :comments

@@ -20,6 +20,19 @@
 #
 require 'rails_helper'
 
-RSpec.describe ArticleLike, type: :model do
-  pending "add some examples to (or delete) #{__FILE__}"
+RSpec.describe Article, type: :model do
+  it "is valid with a title and body" do
+    article = build(:article)
+    expect(article).to be_valid
+  end
+
+  it "is invalid without a title" do
+    article = build(:article, title: nil)
+    expect(article).not_to be_valid
+  end
+
+  it "is invalid without a body" do
+    article = build(:article, body: nil)
+    expect(article).not_to be_valid
+  end
 end
