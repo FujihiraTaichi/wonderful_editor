@@ -39,4 +39,28 @@ RSpec.describe "Api::V1::Articles", type: :request do
       )
     end
   end
+
+  describe "POST /api/v1/articles" do
+    let!(:user) { create(:user) }
+
+    before do
+      # current_user をテスト時だけスタブ
+      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(user)
+    end
+
+    it "記事を作成できる" do
+      post "/api/v1/articles", params: {
+        article: {
+          title: "テストタイトル",
+          body: "テスト本文"
+        }
+      }
+
+      expect(response).to have_http_status(:created)
+
+      json = JSON.parse(response.body)
+      expect(json["title"]).to eq("テストタイトル")
+      expect(json["body"]).to eq("テスト本文")
+    end
+  end
 end
