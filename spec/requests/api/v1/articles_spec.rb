@@ -18,4 +18,25 @@ RSpec.describe "Api::V1::Articles", type: :request do
       expect(json[0]).not_to include("body") # 本文がないことを確認
     end
   end
+
+  describe "GET /api/v1/articles/:id" do
+    let(:article) { create(:article) }
+
+    it "記事の詳細情報を取得できる" do
+      get "/api/v1/articles/#{article.id}"
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+
+      expect(json["id"]).to eq(article.id)
+      expect(json["title"]).to eq(article.title)
+      expect(json["body"]).to eq(article.body)
+      expect(json["updated_at"]).to be_present
+      expect(json["user"]).to include(
+        "id" => article.user.id,
+        "name" => article.user.name
+      )
+    end
+  end
 end
