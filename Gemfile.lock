@@ -348,7 +348,7 @@ PLATFORMS
   x86_64-linux-musl
 
 DEPENDENCIES
-  active_model_serializers (~> 0.10.15)
+  active_model_serializers (~> 0.10.0)
   annotate
   bootsnap (>= 1.4.4)
   byebug
