@@ -63,4 +63,37 @@ RSpec.describe "Api::V1::Articles", type: :request do
       expect(json["body"]).to eq("テスト本文")
     end
   end
+
+  describe "PATCH /api/v1/articles/:id" do
+    let(:user) { create(:user) }
+    let(:article) { create(:article, user: user, title: "Before", body: "Before body") }
+
+    before do
+      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(user)
+    end
+
+    it "自分の記事を更新できる" do
+      patch "/api/v1/articles/#{article.id}", params: {
+        article: { title: "After", body: "After body" }
+      }
+
+      expect(response).to have_http_status(:ok)
+      json = JSON.parse(response.body)
+      expect(json["title"]).to eq("After")
+      expect(json["body"]).to eq("After body")
+    end
+
+    it "他人の記事は更新できない" do
+      other_user = create(:user)
+      other_article = create(:article, user: other_user)
+
+      patch "/api/v1/articles/#{other_article.id}", params: {
+        article: { title: "不正更新" }
+      }
+
+      expect(response).to have_http_status(:forbidden)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("You are not authorized to update this article")
+    end
+  end
 end
