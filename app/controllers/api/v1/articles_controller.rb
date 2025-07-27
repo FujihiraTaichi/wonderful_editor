@@ -18,6 +18,20 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
     end
   end
 
+  def update
+    article = Article.find(params[:id])
+    if article.user_id != current_user.id
+      render json: { error: "You are not authorized to update this article" }, status: :forbidden
+      return
+    end
+
+    if article.update(article_params)
+      render json: article, serializer: Api::V1::ArticleSerializer, status: :ok
+    else
+      render json: { errors: article.errors.full_messages }, status: :unprocessable_entity
+    end
+  end
+
   private
 
   def article_params
