@@ -1,4 +1,7 @@
 class Api::V1::ArticlesController < Api::V1::BaseApiController
+  before_action :authenticate_api_v1_user!, only: [:create, :update, :destroy]
+  before_action :set_article, only: [:show, :update, :destroy]
+
   def index
     articles = Article.order(updated_at: :desc)
     render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
@@ -32,9 +35,26 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
     end
   end
 
+
+  def destroy
+    if @article.user_id == current_user.id
+      @article.destroy
+      head :no_content
+    else
+      render json: { error: "権限がありません" }, status: :forbidden
+    end
+  end
+
   private
 
   def article_params
     params.require(:article).permit(:title, :body)
+  end
+
+  def set_article
+    @article = Article.find_by(id: params[:id])
+    unless @article
+      render json: { error: "記事が見つかりません" }, status: :not_found
+    end
   end
 end
