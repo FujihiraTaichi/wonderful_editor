@@ -35,7 +35,15 @@ RSpec.describe 'User Session API', type: :request do
 
   describe 'DELETE /api/v1/auth/sign_out' do
     context '正常系' do
-      it '有効なトークンでログアウトできる' do
+      it 'user.create_new_auth_tokenで作成したトークンでログアウトできる' do
+        headers = user.create_new_auth_token
+        delete '/api/v1/auth/sign_out', headers: headers
+        expect(response).to have_http_status(:ok)
+        json = JSON.parse(response.body)
+        expect(json['success']).to be_truthy
+      end
+
+      it 'ログイン後に取得したトークンでログアウトできる' do
         # まずログインしてトークンを取得
         post '/api/v1/auth/sign_in', params: { email: user.email, password: 'password' }
         token_headers = response.headers.slice('access-token', 'client', 'uid')
@@ -54,6 +62,12 @@ RSpec.describe 'User Session API', type: :request do
 
       it '不正なトークンではログアウトできない' do
         headers = { 'access-token' => 'invalid', 'client' => 'invalid', 'uid' => user.email }
+        delete '/api/v1/auth/sign_out', headers: headers
+        expect(response).to have_http_status(:not_found).or have_http_status(:unauthorized)
+      end
+
+      it '存在しないユーザーのuidではログアウトできない' do
+        headers = { 'access-token' => 'valid_token', 'client' => 'valid_client', 'uid' => 'nonexistent@example.com' }
         delete '/api/v1/auth/sign_out', headers: headers
         expect(response).to have_http_status(:not_found).or have_http_status(:unauthorized)
       end
