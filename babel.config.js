@@ -1,82 +1,48 @@
-module.exports = function(api) {
-  var validEnv = ['development', 'test', 'production']
-  var currentEnv = api.env()
-  var isDevelopmentEnv = api.env('development')
-  var isProductionEnv = api.env('production')
-  var isTestEnv = api.env('test')
+module.exports = function (api) {
+  const validEnv = ['development', 'test', 'production']
+  const currentEnv = api.env()
+  const isDev = api.env('development')
+  const isProd = api.env('production')
+  const isTest = api.env('test')
 
   if (!validEnv.includes(currentEnv)) {
     throw new Error(
-      'Please specify a valid `NODE_ENV` or ' +
-        '`BABEL_ENV` environment variables. Valid values are "development", ' +
-        '"test", and "production". Instead, received: ' +
-        JSON.stringify(currentEnv) +
-        '.'
+      'Please specify a valid NODE_ENV/BABEL_ENV: "development" | "test" | "production". ' +
+      `Received: ${JSON.stringify(currentEnv)}.`
     )
   }
 
   return {
     presets: [
-      isTestEnv && [
+      isTest && [
         '@babel/preset-env',
-        {
-          targets: {
-            node: 'current'
-          }
-        }
+        { targets: { node: 'current' } }
       ],
-      (isProductionEnv || isDevelopmentEnv) && [
+      (isProd || isDev) && [
         '@babel/preset-env',
         {
           forceAllTransforms: true,
           useBuiltIns: 'entry',
           corejs: 3,
           modules: false,
-          exclude: ['transform-typeof-symbol']
-        }
-      ]
+          exclude: ['transform-typeof-symbol'],
+        },
+      ],
     ].filter(Boolean),
     plugins: [
       'babel-plugin-macros',
       '@babel/plugin-syntax-dynamic-import',
-      isTestEnv && 'babel-plugin-dynamic-import-node',
+      isTest && 'babel-plugin-dynamic-import-node',
       '@babel/plugin-transform-destructuring',
-      [
-        '@babel/plugin-proposal-class-properties',
-        {
-          loose: true
-        }
-      ],
-      [
-        '@babel/plugin-proposal-object-rest-spread',
-        {
-          useBuiltIns: true
-        }
-      ],
-      [
-        '@babel/plugin-proposal-private-methods',
-        {
-          loose: true
-        }
-      ],
-      [
-        '@babel/plugin-proposal-private-property-in-object',
-        {
-          loose: true
-        }
-      ],
-      [
-        '@babel/plugin-transform-runtime',
-        {
-          helpers: false
-        }
-      ],
-      [
-        '@babel/plugin-transform-regenerator',
-        {
-          async: false
-        }
-      ]
-    ].filter(Boolean)
+
+      // ▼ ここを “proposal” → “transform” に置き換え
+      ['@babel/plugin-transform-class-properties', { loose: true }],
+      ['@babel/plugin-transform-object-rest-spread', { useBuiltIns: true }],
+      ['@babel/plugin-transform-private-methods', { loose: true }],
+      ['@babel/plugin-transform-private-property-in-object', { loose: true }],
+
+      ['@babel/plugin-transform-runtime', { helpers: false }],
+      ['@babel/plugin-transform-regenerator', { async: false }],
+    ].filter(Boolean),
   }
 }
