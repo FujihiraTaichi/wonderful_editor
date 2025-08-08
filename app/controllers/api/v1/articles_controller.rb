@@ -1,5 +1,5 @@
 class Api::V1::ArticlesController < Api::V1::BaseApiController
-  before_action :authenticate_user!, only: [:create, :update, :destroy, :drafts, :show_draft]
+  before_action :authenticate_user!, only: [:create, :update, :destroy, :drafts, :show_draft, :my_published_articles]
   before_action :set_article, only: [:show, :update, :destroy]
 
   def index
@@ -56,6 +56,11 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
     render json: article, serializer: Api::V1::ArticleSerializer
   rescue ActiveRecord::RecordNotFound
     render json: { error: "下書き記事が見つかりません" }, status: :not_found
+  end
+
+  def my_published_articles
+    articles = current_user.articles.published.order(updated_at: :desc)
+    render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
   end
 
   private
