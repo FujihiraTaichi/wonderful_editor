@@ -2,22 +2,8 @@ require 'rails_helper'
 
 
 RSpec.describe "Api::V1::Articles", type: :request do
-  def auth_headers_for(user)
-    post "/api/v1/auth/sign_in", params: {
-      email: user.email,
-      password: user.password
-    }
-
-    {
-      'access-token' => response.headers['access-token'],
-      'client' => response.headers['client'],
-      'uid' => response.headers['uid'],
-      'Content-Type' => 'application/json'
-    }
-  end
-
   let(:user) { create(:user, password: 'password') }
-let(:headers) { auth_headers_for(user) }
+  let(:headers) { user.create_new_auth_token.merge('Content-Type' => 'application/json') }
 
 it "記事を作成できる" do
   post "/api/v1/articles", params: {
@@ -72,11 +58,6 @@ end
   describe "POST /api/v1/articles" do
     let!(:user) { create(:user) }
 
-    before do
-      # current_user をテスト時だけスタブ
-      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(user)
-    end
-
     it "記事を作成できる" do
       post "/api/v1/articles", params: {
         article: {
@@ -97,10 +78,6 @@ end
   describe "PATCH /api/v1/articles/:id" do
     let(:user) { create(:user) }
     let(:article) { create(:article, user: user, title: "Before", body: "Before body") }
-
-    before do
-      allow_any_instance_of(Api::V1::BaseApiController).to receive(:current_user).and_return(user)
-    end
 
     it "自分の記事を更新できる" do
       patch "/api/v1/articles/#{article.id}", params: {
