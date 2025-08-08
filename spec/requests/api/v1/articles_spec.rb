@@ -53,6 +53,83 @@ RSpec.describe "Api::V1::Articles", type: :request do
     end
   end
 
+  describe "GET /api/v1/articles/drafts" do
+    let(:user) { create(:user) }
+    let(:headers) { user.create_new_auth_token.merge('Content-Type' => 'application/json') }
+
+    before do
+      create_list(:article, 3, user: user, status: :draft, updated_at: Time.current + 1.day)
+      create_list(:article, 2, user: user, status: :published, updated_at: Time.current + 1.day)
+      create_list(:article, 2, status: :draft, updated_at: Time.current + 1.day) # 他のユーザーの下書き
+    end
+
+    it "自分の下書き記事一覧のみ取得できる" do
+      get "/api/v1/articles/drafts", headers: headers
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+
+      expect(json.length).to eq(3) # 自分の下書き記事のみ
+      expect(json[0]).to include("id", "title", "updated_at")
+      expect(json[0]).not_to include("body")
+    end
+
+    it "未認証ではアクセスできない" do
+      get "/api/v1/articles/drafts"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
+  describe "GET /api/v1/articles/drafts/:id" do
+    let(:user) { create(:user) }
+    let(:headers) { user.create_new_auth_token.merge('Content-Type' => 'application/json') }
+    let(:my_draft_article) { create(:article, user: user, status: :draft) }
+    let(:my_published_article) { create(:article, user: user, status: :published) }
+    let(:other_draft_article) { create(:article, status: :draft) }
+
+    it "自分の下書き記事の詳細を取得できる" do
+      get "/api/v1/articles/drafts/#{my_draft_article.id}", headers: headers
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+
+      expect(json["id"]).to eq(my_draft_article.id)
+      expect(json["title"]).to eq(my_draft_article.title)
+      expect(json["body"]).to eq(my_draft_article.body)
+      expect(json["status"]).to eq("draft")
+      expect(json["updated_at"]).to be_present
+      expect(json["user"]).to include(
+        "id" => my_draft_article.user.id,
+        "name" => my_draft_article.user.name
+      )
+    end
+
+    it "自分の公開記事は下書きとして取得できない" do
+      get "/api/v1/articles/drafts/#{my_published_article.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("下書き記事が見つかりません")
+    end
+
+    it "他人の下書き記事は取得できない" do
+      get "/api/v1/articles/drafts/#{other_draft_article.id}", headers: headers
+
+      expect(response).to have_http_status(:not_found)
+      json = JSON.parse(response.body)
+      expect(json["error"]).to eq("下書き記事が見つかりません")
+    end
+
+    it "未認証ではアクセスできない" do
+      get "/api/v1/articles/drafts/#{my_draft_article.id}"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "POST /api/v1/articles" do
     let!(:user) { create(:user) }
 
