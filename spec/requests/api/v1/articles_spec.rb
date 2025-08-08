@@ -53,6 +53,35 @@ RSpec.describe "Api::V1::Articles", type: :request do
     end
   end
 
+  describe "GET /api/v1/current/articles" do
+    let(:user) { create(:user) }
+    let(:headers) { user.create_new_auth_token.merge('Content-Type' => 'application/json') }
+
+    before do
+      create_list(:article, 3, user: user, status: :published, updated_at: Time.current + 1.day)
+      create_list(:article, 2, user: user, status: :draft, updated_at: Time.current + 1.day)
+      create_list(:article, 2, status: :published, updated_at: Time.current + 1.day) # 他のユーザーの公開記事
+    end
+
+    it "自分の公開記事一覧のみ取得できる" do
+      get "/api/v1/current/articles", headers: headers
+
+      expect(response).to have_http_status(:ok)
+
+      json = JSON.parse(response.body)
+
+      expect(json.length).to eq(3) # 自分の公開記事のみ
+      expect(json[0]).to include("id", "title", "updated_at")
+      expect(json[0]).not_to include("body")
+    end
+
+    it "未認証ではアクセスできない" do
+      get "/api/v1/current/articles"
+
+      expect(response).to have_http_status(:unauthorized)
+    end
+  end
+
   describe "GET /api/v1/articles/drafts" do
     let(:user) { create(:user) }
     let(:headers) { user.create_new_auth_token.merge('Content-Type' => 'application/json') }

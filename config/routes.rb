@@ -19,6 +19,9 @@ Rails.application.routes.draw do
 
       # 下書き記事の詳細取得用のルート
       get 'articles/drafts/:id', to: 'articles#show_draft'
+
+      # マイページ用のルート
+      get 'current/articles', to: 'articles#my_published_articles'
     end
   end
 end
