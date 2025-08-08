@@ -11,7 +11,14 @@ Rails.application.routes.draw do
     namespace :v1 do
       mount_devise_token_auth_for "User", at: "auth"
 
-      resources :articles
+      resources :articles do
+        collection do
+          get :drafts
+        end
+      end
+
+      # 下書き記事の詳細取得用のルート
+      get 'articles/drafts/:id', to: 'articles#show_draft'
     end
   end
 end
