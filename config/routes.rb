@@ -1,27 +1,32 @@
 Rails.application.routes.draw do
   root to: "home#index"
 
-  # reload 対策
-  get "sign_up", to: "home#index"
-  get "sign_in", to: "home#index"
-  get "articles/new", to: "home#index"
-  get "articles/:id", to: "home#index"
+  # SPA のためのリロード対策
+  get "sign_up",               to: "home#index"
+  get "sign_in",               to: "home#index"
+  get "articles/new",          to: "home#index"
+  get "articles/draft",        to: "home#index"
+  get "articles/drafts/:id/edit", to: "home#index"
+  get "articles/:id/edit",     to: "home#index"
+  get "articles/:id",          to: "home#index"
+  get "mypage",                to: "home#index"
 
   namespace :api do
     namespace :v1 do
-      mount_devise_token_auth_for "User", at: "auth"
+      mount_devise_token_auth_for "User", at: "auth", controllers: {
+        registrations: "api/v1/auth/registrations",
+      }
 
-      resources :articles do
-        collection do
-          get :drafts
-        end
+      # 下書きAPI: /api/v1/articles/drafts(:id)
+      namespace :articles do
+        resources :drafts, only: [:index, :show]
       end
 
-      # 下書き記事の詳細取得用のルート
-      get 'articles/drafts/:id', to: 'articles#show_draft'
+      namespace :current do
+        resources :articles, only: [:index]
+      end
 
-      # マイページ用のルート
-      get 'current/articles', to: 'articles#my_published_articles'
+      resources :articles
     end
   end
 end
