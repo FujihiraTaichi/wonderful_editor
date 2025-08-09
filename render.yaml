@@ -2,21 +2,29 @@ services:
   - type: web
     name: wonderful-editor
     env: ruby
-    region: singapore
     plan: free
     branch: main
     numInstances: 1
     healthCheckPath: /
-    buildCommand: ./bin/render-build.sh
+    buildCommand: |
+      bundle install
+      # 本番でも devDependencies を入れる（--frozen-lockfile で失敗したら通常インストールにフォールバック）
+      yarn install --frozen-lockfile --production=false || yarn install --production=false
+      bundle exec rake assets:precompile
     startCommand: bundle exec puma -C config/puma.rb
     envVars:
-      - key: RAILS_MASTER_KEY
-        sync: false
-      - key: DATABASE_URL
-        fromDatabase:
-          name: postgresql-wonderful-editor
-          property: connectionString
-    autoDeploy: false
+      - key: RAILS_ENV
+        value: production
+      - key: NODE_ENV
+        value: production
+      - key: RAILS_LOG_TO_STDOUT
+        value: "true"
+      # devDependencies も入れるために必須
+      - key: YARN_PRODUCTION
+        value: "false"
+      # （任意）ビルド安定化のための Yarn キャッシュ
+      - key: YARN_CACHE_FOLDER
+        value: /opt/render/.cache/yarn
 
 databases:
   - name: postgresql-wonderful-editor
