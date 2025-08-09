@@ -4,6 +4,8 @@ services:
     env: ruby
     plan: free
     branch: main
+    numInstances: 1
+    healthCheckPath: /
     buildCommand: |
       bundle install
       # 本番でも devDependencies を入れる（--frozen-lockfile で失敗したら通常インストールにフォールバック）
@@ -17,10 +19,10 @@ services:
         value: production
       - key: RAILS_LOG_TO_STDOUT
         value: "true"
-      # これが重要：devDependencies も入れる
+      # devDependencies も入れるために必須
       - key: YARN_PRODUCTION
         value: "false"
-      # （任意）ビルドを安定させるための Yarn キャッシュ
+      # （任意）ビルド安定化のための Yarn キャッシュ
       - key: YARN_CACHE_FOLDER
         value: /opt/render/.cache/yarn
 
