@@ -17,18 +17,16 @@ Rails.application.routes.draw do
         registrations: "api/v1/auth/registrations",
       }
 
-      resources :articles do
-        collection do
-          get  :drafts,  to: "articles#drafts"
-        end
-        member do
-          get  :draft,   to: "articles#show_draft"
-        end
+      # 下書きAPI: /api/v1/articles/drafts(:id)
+      namespace :articles do
+        resources :drafts, only: [:index, :show]
       end
 
       namespace :current do
         resources :articles, only: [:index]
       end
+
+      resources :articles
     end
   end
 end

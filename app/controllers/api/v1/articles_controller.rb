@@ -1,5 +1,5 @@
 class Api::V1::ArticlesController < Api::V1::BaseApiController
-  before_action :authenticate_api_v1_user!, only: [:create, :update, :destroy, :drafts, :show_draft, :my_published_articles]
+  before_action :authenticate_api_v1_user!, only: [:create, :update, :destroy, :my_published_articles]
   before_action :set_article, only: [:show, :update, :destroy]
 
   def index
@@ -44,18 +44,6 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
     else
       render json: { error: "権限がありません" }, status: :forbidden
     end
-  end
-
-  def drafts
-    articles = current_api_v1_user.articles.draft.order(updated_at: :desc)
-    render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
-  end
-
-  def show_draft
-    article = current_api_v1_user.articles.draft.find(params[:id])
-    render json: article, serializer: Api::V1::ArticleSerializer
-  rescue ActiveRecord::RecordNotFound
-    render json: { error: "下書き記事が見つかりません" }, status: :not_found
   end
 
   def my_published_articles
