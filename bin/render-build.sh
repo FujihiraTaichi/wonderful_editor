@@ -2,7 +2,17 @@
 # exit on error
 set -o errexit
 
+# Install Ruby dependencies
 bundle install
-bundle exec rake assets:precompile
-bundle exec rake assets:clean
-bundle exec rake db:migrate
+
+# Install Node.js dependencies (including devDependencies for build tools)
+yarn install --frozen-lockfile --production=false || yarn install --production=false
+
+# Precompile assets
+bundle exec rails assets:precompile
+
+# Clean old assets
+bundle exec rails assets:clean
+
+# Run database migrations
+bundle exec rails db:migrate
