@@ -12,10 +12,16 @@ import store from "../store/store.js";
 import router from "../router/router.js";
 import App from "../app.vue";
 import axios from "axios";
-import VueAxios from "vue-axios";
+import * as VueAxios from "vue-axios";
 import "vuetify/dist/vuetify.min.css";
-import "highlight.js/styles/monokai.css";
-import Vuetify from "vuetify";
+import '@fortawesome/fontawesome-free/css/all.css'
+const Vuetify = require("vuetify");
+
+// VueAxios を使う前に、API のベースURLを Rails 側に固定（相対パスだと 3035 に飛んでしまうため）
+axios.defaults.baseURL = "http://localhost:3000";
+axios.defaults.withCredentials = true; // 認証トークン運用時は付けておくと安心
+axios.defaults.headers.common["X-Requested-With"] = "XMLHttpRequest";
+
 Vue.use(Vuex);
 Vue.use(VueRouter);
 Vue.use(VueAxios, axios);

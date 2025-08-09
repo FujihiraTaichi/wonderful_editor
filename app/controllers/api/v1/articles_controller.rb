@@ -1,5 +1,5 @@
 class Api::V1::ArticlesController < Api::V1::BaseApiController
-  before_action :authenticate_user!, only: [:create, :update, :destroy, :drafts, :show_draft, :my_published_articles]
+  before_action :authenticate_api_v1_user!, only: [:create, :update, :destroy, :drafts, :show_draft, :my_published_articles]
   before_action :set_article, only: [:show, :update, :destroy]
 
   def index
@@ -15,7 +15,7 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
   end
 
   def create
-    article = current_user.articles.build(article_params)
+    article = current_api_v1_user.articles.build(article_params)
     if article.save
       render json: article, status: :created
     else
@@ -25,7 +25,7 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
 
   def update
     article = Article.find(params[:id])
-    if article.user_id != current_user.id
+    if article.user_id != current_api_v1_user.id
       render json: { error: "You are not authorized to update this article" }, status: :forbidden
       return
     end
@@ -38,7 +38,7 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
   end
 
   def destroy
-    if @article.user_id == current_user.id
+    if @article.user_id == current_api_v1_user.id
       @article.destroy
       head :no_content
     else
@@ -47,26 +47,32 @@ class Api::V1::ArticlesController < Api::V1::BaseApiController
   end
 
   def drafts
-    articles = current_user.articles.draft.order(updated_at: :desc)
+    articles = current_api_v1_user.articles.draft.order(updated_at: :desc)
     render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
   end
 
   def show_draft
-    article = current_user.articles.draft.find(params[:id])
+    article = current_api_v1_user.articles.draft.find(params[:id])
     render json: article, serializer: Api::V1::ArticleSerializer
   rescue ActiveRecord::RecordNotFound
     render json: { error: "下書き記事が見つかりません" }, status: :not_found
   end
 
   def my_published_articles
-    articles = current_user.articles.published.order(updated_at: :desc)
+    articles = current_api_v1_user.articles.published.order(updated_at: :desc)
     render json: articles, each_serializer: Api::V1::ArticlePreviewSerializer
   end
 
   private
 
   def article_params
-    params.require(:article).permit(:title, :body, :status)
+    if params[:article].is_a?(ActionController::Parameters)
+      # ネスト形式の場合（article: { title: ..., body: ..., status: ... }）
+      params.require(:article).permit(:title, :body, :status)
+    else
+      # トップレベル形式の場合（title=..., body=..., status=...）
+      params.permit(:title, :body, :status)
+    end
   end
 
   def set_article
