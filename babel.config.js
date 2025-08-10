@@ -1,23 +1,12 @@
 module.exports = function (api) {
-  const validEnv = ['development', 'test', 'production']
-  const currentEnv = api.env()
-  const isDev = api.env('development')
-  const isProd = api.env('production')
-  const isTest = api.env('test')
-
-  if (!validEnv.includes(currentEnv)) {
-    throw new Error(
-      'Please specify a valid NODE_ENV/BABEL_ENV: "development" | "test" | "production". ' +
-      `Received: ${JSON.stringify(currentEnv)}.`
-    )
-  }
+  const env = api.env();
+  const isTest = env === 'test';
+  const isProd = env === 'production';
+  const isDev  = env === 'development';
 
   return {
     presets: [
-      isTest && [
-        '@babel/preset-env',
-        { targets: { node: 'current' } }
-      ],
+      isTest && ['@babel/preset-env', { targets: { node: 'current' } }],
       (isProd || isDev) && [
         '@babel/preset-env',
         {
@@ -34,15 +23,14 @@ module.exports = function (api) {
       '@babel/plugin-syntax-dynamic-import',
       isTest && 'babel-plugin-dynamic-import-node',
       '@babel/plugin-transform-destructuring',
-      ['@babel/plugin-transform-class-properties', { loose: true }],
+
+      // ★ 3兄弟の loose を必ず同一(true)にする
+      ['@babel/plugin-transform-class-properties',           { loose: true }],
+      ['@babel/plugin-transform-private-methods',            { loose: true }],
+      ['@babel/plugin-transform-private-property-in-object', { loose: true }],
+
       ['@babel/plugin-transform-object-rest-spread', { useBuiltIns: true }],
-      // ★ private-method系は使わない（不具合原因だったため外す）
-      // ['@babel/plugin-transform-private-methods', { loose: true }],
-      // ['@babel/plugin-transform-private-property-in-object', { loose: true }],
-      // ★ runtime は helpers/regenerator を true、corejs は false
       ['@babel/plugin-transform-runtime', { helpers: true, regenerator: true, corejs: false }],
     ].filter(Boolean),
-    // ▼ これで babel は node_modules を素通り（壊さない）
-    ignore: [/node_modules/],
-  }
-}
+  };
+};
