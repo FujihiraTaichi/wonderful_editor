@@ -34,12 +34,13 @@ module.exports = function (api) {
       '@babel/plugin-syntax-dynamic-import',
       isTest && 'babel-plugin-dynamic-import-node',
       '@babel/plugin-transform-destructuring',
+
+      // ★ "loose" は3兄弟で必ず同一にする（全部 true）
       ['@babel/plugin-transform-class-properties', { loose: true }],
+      ['@babel/plugin-transform-private-methods', { loose: true }],
+      ['@babel/plugin-transform-private-property-in-object', { loose: true }],
       ['@babel/plugin-transform-object-rest-spread', { useBuiltIns: true }],
-      // ★ private-method系は使わない（不具合原因だったため外す）
-      // ['@babel/plugin-transform-private-methods', { loose: true }],
-      // ['@babel/plugin-transform-private-property-in-object', { loose: true }],
-      // ★ runtime は helpers/regenerator を true、corejs は false
+
       ['@babel/plugin-transform-runtime', { helpers: true, regenerator: true, corejs: false }],
     ].filter(Boolean),
     // ▼ これで babel は node_modules を素通り（壊さない）
